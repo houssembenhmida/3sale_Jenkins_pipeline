@@ -112,18 +112,18 @@ def runToolbox(args) {
               "env": [
                 // This is needed for the 3scale_toolbox to read its configuration file
                 // mounted from the toolbox-config secret 
-                [ "name": "HOME", "value": "/tmp/3scale" ]
+                [ "name": "HOME", "value": "/tmp/3scale/config" ]
               ],
               "volumeMounts": [
-                // [ "mountPath": "/config", "name": "toolbox-config" ],
+                [ "mountPath": "/tmp/3scale/config", "name": "toolbox-config" ],
                 // [ "mountPath": "/artifacts", "name": "artifacts" ],
-                [ "mountPath": "/tmp/3scale", "name": "3scale-volume" ]
+                [ "mountPath": "/tmp/3scale/files", "name": "3scale-volume" ]
               ]
             ]
           ],
           "volumes": [
             // This Secret contains the .3scalerc.yaml toolbox configuration file
-            // [ "name": "toolbox-config", "secret": [ "secretName": "3scalerc" ] ],
+            [ "name": "toolbox-config", "secret": [ "secretName": "3scalerc" ] ],
             // This ConfigMap contains the artifacts to deploy (OpenAPI Specification file, Application Plan file, etc.)
             // [ "name": "artifacts", "configMap": [ "name": "openapi" ] ],
             [ "name": "3scale-volume", "persistentVolumeClaim": [ "claimName": "3scale-pvc" ] ]
