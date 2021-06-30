@@ -16,12 +16,17 @@
  * 4. Create a new Jenkins pipeline using the content of this file.
  */
 
-def targetSystemName = "saas-usecase-apikey"
-def targetInstance = "3scale-saas"
-def privateBaseURL = "http://echo-api.3scale.net"
-def testUserKey = "azerty1234567890"
-def developerAccountId = "john"
 
+def 3scaleSourceInstance = "3scale-instance"
+def 3scaleTargetInstance = "3scale-instance"
+def sourceProductName = "hello_world_product"
+def targetProductName = "hello_world_product_3"
+def sourceAppPlanName = "hello_world_app_plan"
+def targetAppPlanName = "hello_world_app_plan_3"
+def sourceBackendName = "hello_world_backend"
+def targetBackendName = "hello_world_backend_3"
+def targetApplicationName = "hello_world_application_3"
+def account = "hello_world_user"
 /*
  * Only needed when using self-managed APIcast or on-premises installation of 3scale
  */
@@ -29,58 +34,54 @@ def publicStagingBaseURL = null // change to something such as "http://my-stagin
 def publicProductionBaseURL = null // change to something such as "http://my-production-api.example.test" for self-managed APIcast or on-premises installation of 3scale
 
 node() {
-  stage("Fetch OpenAPI") {
-    // Fetch the OpenAPI Specification file and provision it as a ConfigMap
-    sh """
-    curl -sfk -o swagger.json https://raw.githubusercontent.com/microcks/api-lifecycle/master/beer-catalog-demo/api-contracts/beer-catalog-api-swagger.json
-    oc delete configmap openapi --ignore-not-found
-    oc create configmap openapi --from-file="swagger.json"
-    """
-  }
-
-  stage("Import OpenAPI") {
-    def tooboxArgs = [ "3scale", "import", "openapi", "-d", targetInstance, "/artifacts/swagger.json", "--override-private-base-url=${privateBaseURL}", "-t", targetSystemName ]
-    if (publicStagingBaseURL != null) {
-        tooboxArgs += "--staging-public-base-url=${publicStagingBaseURL}"
-    }
-    if (publicProductionBaseURL != null) {
-        tooboxArgs += "--production-public-base-url=${publicProductionBaseURL}"
-    }
-    runToolbox(tooboxArgs)
-  }
   
-  stage("Create an Application Plan") {
-    runToolbox([ "3scale", "application-plan", "apply", targetInstance, targetSystemName, "test", "-n", "Test Plan", "--default" ])
+  stage("Export product") {
+    runToolbox([ "3scale", "product", "export", "-f /tmp/3scale/files/product.yaml", 3scaleSourceInstance, productName])
   }
 
+  stage("Edit product name") {
+    runToolbox([ "sed", "-i", "'s/$sourceProductName/$targetProductName/g'", "/tmp/3scale/files/product.yaml" ])
+  }
+
+  stage("Edit application plan name") {
+    runToolbox([ "sed", "-i", "'s/$sourceAppPlanName/$targetAppPlanName/g'", "/tmp/3scale/files/product.yaml" ])
+  }
+
+  stage("Edit backend name") {
+    runToolbox([ "sed", "-i", "'s/$sourceBackendName/$targetBackendName/g'", "/tmp/3scale/files/product.yaml" ])
+  }
+
+  stage("Import product") {
+    runToolbox([ "3scale", "product", "import", "-f /tmp/3scale/files/product.yaml", 3scaleTargetInstance])
+  }
   stage("Create an Application") {
-    runToolbox([ "3scale", "application", "apply", targetInstance, testUserKey, "--account=${developerAccountId}", "--name=Test Application", "--description=Created by Jenkins", "--plan=test", "--service=${targetSystemName}" ])
+    runToolbox([ "3scale", "application", "create", targetInstance, account, targetProductName, targetAppPlanName, targetApplicationName])
   }
 
-  stage("Run integration tests") {
-    /*
-     * When using 3scale Hosted with hosted APIcast instance, we need to extract the proxy definition
-     * to read the Public Staging Base URL. Otherwise, we can just re-use the publicStagingBaseURL
-     * variable defined above.
-     */
-    if (publicStagingBaseURL == null) {
-      def proxyDefinition = runToolbox([ "3scale", "proxy", "show", targetInstance, targetSystemName, "sandbox" ])
-      def proxy = readJSON text: proxyDefinition
-      publicStagingBaseURL = proxy.content.proxy.sandbox_endpoint
-    }
+  // stage("Run integration tests") {
+  //   /*
+  //    * When using 3scale Hosted with hosted APIcast instance, we need to extract the proxy definition
+  //    * to read the Public Staging Base URL. Otherwise, we can just re-use the publicStagingBaseURL
+  //    * variable defined above.
+  //    */
+  //   if (publicStagingBaseURL == null) {
+  //     def proxyDefinition = runToolbox([ "3scale", "proxy", "show", targetInstance, targetSystemName, "sandbox" ])
+  //     def proxy = readJSON text: proxyDefinition
+  //     publicStagingBaseURL = proxy.content.proxy.sandbox_endpoint
+  //   }
 
-    sh """
-    echo "Public Staging Base URL is ${publicStagingBaseURL}"
-    echo "userkey is ${testUserKey}"
-    curl -vfk ${publicStagingBaseURL}/beer -H 'api-key: ${testUserKey}'
-    curl -vfk ${publicStagingBaseURL}/beer/Weissbier -H 'api-key: ${testUserKey}'
-    curl -vfk ${publicStagingBaseURL}/beer/findByStatus/available -H 'api-key: ${testUserKey}'
-    """
-  }
+  //   sh """
+  //   echo "Public Staging Base URL is ${publicStagingBaseURL}"
+  //   echo "userkey is ${testUserKey}"
+  //   curl -vfk ${publicStagingBaseURL}/beer -H 'api-key: ${testUserKey}'
+  //   curl -vfk ${publicStagingBaseURL}/beer/Weissbier -H 'api-key: ${testUserKey}'
+  //   curl -vfk ${publicStagingBaseURL}/beer/findByStatus/available -H 'api-key: ${testUserKey}'
+  //   """
+  // }
   
-  stage("Promote to production") {
-    runToolbox([ "3scale", "proxy", "promote", targetInstance, targetSystemName ])
-  }
+  // stage("Promote to production") {
+  //   runToolbox([ "3scale", "proxy", "promote", targetInstance, targetSystemName ])
+  // }
 }
 
 /*
