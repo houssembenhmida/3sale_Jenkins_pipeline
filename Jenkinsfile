@@ -17,8 +17,8 @@
  */
 
 
-def 3scaleSourceInstance = "3scale-instance"
-def 3scaleTargetInstance = "3scale-instance"
+def sourceInstance = "3scale-instance"
+def targetInstance = "3scale-instance"
 def sourceProductName = "hello_world_product"
 def targetProductName = "hello_world_product_3"
 def sourceAppPlanName = "hello_world_app_plan"
@@ -33,10 +33,9 @@ def account = "hello_world_user"
 def publicStagingBaseURL = null // change to something such as "http://my-staging-api.example.test" for self-managed APIcast or on-premises installation of 3scale
 def publicProductionBaseURL = null // change to something such as "http://my-production-api.example.test" for self-managed APIcast or on-premises installation of 3scale
 
-node{
-  
+node {
   stage("Export product") {
-    runToolbox([ "3scale", "product", "export", "-f /tmp/3scale/files/product.yaml", 3scaleSourceInstance, productName])
+    runToolbox([ "3scale", "product", "export", "-f /tmp/3scale/files/product.yaml", sourceInstance, productName])
   }
 
   stage("Edit product name") {
@@ -52,11 +51,12 @@ node{
   }
 
   stage("Import product") {
-    runToolbox([ "3scale", "product", "import", "-f /tmp/3scale/files/product.yaml", 3scaleTargetInstance])
+    runToolbox([ "3scale", "product", "import", "-f /tmp/3scale/files/product.yaml", targetInstance])
   }
   stage("Create an Application") {
     runToolbox([ "3scale", "application", "create", targetInstance, account, targetProductName, targetAppPlanName, targetApplicationName])
   }
+}
 
   // stage("Run integration tests") {
   //   /*
@@ -82,7 +82,6 @@ node{
   // stage("Promote to production") {
   //   runToolbox([ "3scale", "proxy", "promote", targetInstance, targetSystemName ])
   // }
-}
 
 /*
  * This function runs the 3scale toolbox as a Kubernetes Job.
