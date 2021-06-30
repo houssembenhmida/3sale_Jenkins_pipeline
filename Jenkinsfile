@@ -33,7 +33,7 @@ def account = "hello_world_user"
 def publicStagingBaseURL = null // change to something such as "http://my-staging-api.example.test" for self-managed APIcast or on-premises installation of 3scale
 def publicProductionBaseURL = null // change to something such as "http://my-production-api.example.test" for self-managed APIcast or on-premises installation of 3scale
 
-node() {
+node{
   
   stage("Export product") {
     runToolbox([ "3scale", "product", "export", "-f /tmp/3scale/files/product.yaml", 3scaleSourceInstance, productName])
