@@ -35,7 +35,7 @@ def publicProductionBaseURL = null // change to something such as "http://my-pro
 
 node {
   stage("Export product") {
-    runToolbox([ "3scale", "product", "export", "-f /tmp/3scale/files/product.yaml", sourceInstance, productName])
+    runToolbox([ "3scale", "product", "export", "-f /tmp/3scale/files/product.yaml", sourceInstance, sourceProductName])
   }
 
   stage("Edit product name") {
