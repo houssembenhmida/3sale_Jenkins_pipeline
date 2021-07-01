@@ -158,7 +158,8 @@ def runToolbox(args) {
   oc delete job toolbox --ignore-not-found
   sleep 2
   oc create -f job.yaml
-  sleep 20 # Adjust the sleep duration to your server velocity
+  i=0
+  while [ true ]; do i=$[$i+1]; oc get job toolbox | grep "1/1"; if [ $? -eq 0 ]; then break; elif [ $i -eq 60 ]; then echo "ERROR"; break; fi; echo $i; sleep 1; done
   """
   // sh """
   // oc delete job toolbox --ignore-not-found
