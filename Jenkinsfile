@@ -159,7 +159,7 @@ def runToolbox(args) {
   sleep 2
   oc create -f job.yaml
   sleep 2
-  oc wait --for=condition=complete job/toolbox --ti
+  oc wait --for=condition=complete job/toolbox
   """
   // i=0
   // while [ true ]
