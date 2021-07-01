@@ -40,7 +40,7 @@ node {
 
   stage("Edit product name") {
     echo "$sourceProductName/$targetProductName"
-    runToolbox([ "sed", "-i", "'s/$sourceProductName/$targetProductName/g'", "/tmp/3scale/files/product.yaml" ])
+    runToolbox([ "sed", "-i", "\'s/$sourceProductName/$targetProductName/g\'", "/tmp/3scale/files/product.yaml" ])
   }
 
   // stage("Edit application plan name") {
