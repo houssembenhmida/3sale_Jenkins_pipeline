@@ -39,7 +39,7 @@ node {
   // }
 
   stage("Edit product name") {
-    echo "'s/$sourceProductName/$targetProductName/g'"
+    echo "$sourceProductName/$targetProductName"
     runToolbox([ "sed", "-i", "'s/$sourceProductName/$targetProductName/g'", "/tmp/3scale/files/product.yaml" ])
   }
 
