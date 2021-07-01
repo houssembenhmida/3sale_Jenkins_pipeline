@@ -35,17 +35,12 @@ def publicProductionBaseURL = null // change to something such as "http://my-pro
 
 node {
   stage("Export product") {
-    runToolbox([ "ls", "-al", "/tmp/3scale/files"])
-  }
-  stage("Export product") {
-    echo sourceInstance
-    echo sourceProductName
     runToolbox([ "3scale", "product", "export", "-k", "--file=/tmp/3scale/files/product.yaml", sourceInstance, sourceProductName])
   }
 
-  // stage("Edit product name") {
-  //   runToolbox([ "sed", "-i", "'s/$sourceProductName/$targetProductName/g'", "/tmp/3scale/files/product.yaml" ])
-  // }
+  stage("Edit product name") {
+    runToolbox([ "sed", "-i", "'s/$sourceProductName/$targetProductName/g'", "/tmp/3scale/files/product.yaml" ])
+  }
 
   // stage("Edit application plan name") {
   //   runToolbox([ "sed", "-i", "'s/$sourceAppPlanName/$targetAppPlanName/g'", "/tmp/3scale/files/product.yaml" ])
