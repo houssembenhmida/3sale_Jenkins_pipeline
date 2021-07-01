@@ -39,24 +39,24 @@ node {
     runToolbox([ "3scale", "product", "export", "-k", "-f /tmp/3scale/files/product.yaml", sourceInstance, sourceProductName])
   }
 
-  stage("Edit product name") {
-    runToolbox([ "sed", "-i", "'s/$sourceProductName/$targetProductName/g'", "/tmp/3scale/files/product.yaml" ])
-  }
+  // stage("Edit product name") {
+  //   runToolbox([ "sed", "-i", "'s/$sourceProductName/$targetProductName/g'", "/tmp/3scale/files/product.yaml" ])
+  // }
 
-  stage("Edit application plan name") {
-    runToolbox([ "sed", "-i", "'s/$sourceAppPlanName/$targetAppPlanName/g'", "/tmp/3scale/files/product.yaml" ])
-  }
+  // stage("Edit application plan name") {
+  //   runToolbox([ "sed", "-i", "'s/$sourceAppPlanName/$targetAppPlanName/g'", "/tmp/3scale/files/product.yaml" ])
+  // }
 
-  stage("Edit backend name") {
-    runToolbox([ "sed", "-i", "'s/$sourceBackendName/$targetBackendName/g'", "/tmp/3scale/files/product.yaml" ])
-  }
+  // stage("Edit backend name") {
+  //   runToolbox([ "sed", "-i", "'s/$sourceBackendName/$targetBackendName/g'", "/tmp/3scale/files/product.yaml" ])
+  // }
 
-  stage("Import product") {
-    runToolbox([ "3scale", "product", "import", "-k", "-f /tmp/3scale/files/product.yaml", targetInstance])
-  }
-  stage("Create an Application") {
-    runToolbox([ "3scale", "application", "create", "-k", targetInstance, account, targetProductName, targetAppPlanName, targetApplicationName])
-  }
+  // stage("Import product") {
+  //   runToolbox([ "3scale", "product", "import", "-k", "-f /tmp/3scale/files/product.yaml", targetInstance])
+  // }
+  // stage("Create an Application") {
+  //   runToolbox([ "3scale", "application", "create", "-k", targetInstance, account, targetProductName, targetAppPlanName, targetApplicationName])
+  // }
 }
 
   // stage("Run integration tests") {
