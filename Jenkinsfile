@@ -35,6 +35,9 @@ def publicProductionBaseURL = null // change to something such as "http://my-pro
 
 node {
   stage("Export product") {
+    runToolbox([ "ls", "-al", "/tmp/3scale/files"])
+  }
+  stage("Export product") {
     echo sourceInstance
     echo sourceProductName
     runToolbox([ "3scale", "product", "export", "-k", "-f /tmp/3scale/files/product.yaml", sourceInstance, sourceProductName])
@@ -150,7 +153,7 @@ def runToolbox(args) {
   kubernetesJob.spec.template.spec.containers[0].args = args
 
   // Write the Kubernetes Job definition to a YAML file
-  sh "rm -f -- job.yaml"
+  sh "rm -f job.yaml"
   writeYaml file: "job.yaml", data: kubernetesJob
   // writeYaml file: "3scalerc.yaml", data: kubernetesJob
 
