@@ -163,7 +163,7 @@ def runToolbox(args) {
   while [ true ]
   do
   i=\$[\$i+1]
-  oc get job toolbox \| grep "1/1"
+  oc get job toolbox|grep "1/1"
   if [ \$? -eq 0 ]
   then
   break
