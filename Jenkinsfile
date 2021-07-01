@@ -20,18 +20,14 @@
 def sourceInstance = "3scale-instance"
 def targetInstance = "3scale-instance"
 def sourceProductName = "hello_world_product"
-def targetProductName = "hello_world_product_3"
+def targetProductName = "hello_world_product_4"
 def sourceAppPlanName = "hello_world_app_plan"
-def targetAppPlanName = "hello_world_app_plan_3"
+def targetAppPlanName = "hello_world_app_plan_4"
 def sourceBackendName = "hello_world_backend"
-def targetBackendName = "hello_world_backend_3"
-def targetApplicationName = "hello_world_application_3"
-def account = "hello_world_user"
-/*
- * Only needed when using self-managed APIcast or on-premises installation of 3scale
- */
-def publicStagingBaseURL = null // change to something such as "http://my-staging-api.example.test" for self-managed APIcast or on-premises installation of 3scale
-def publicProductionBaseURL = null // change to something such as "http://my-production-api.example.test" for self-managed APIcast or on-premises installation of 3scale
+def targetBackendName = "hello_world_backend_4"
+def targetApplicationName = "hello_world_application_4"
+def account = "test"
+
 
 node {
   stage("Export product") {
