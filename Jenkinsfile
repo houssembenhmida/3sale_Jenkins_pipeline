@@ -1,9 +1,8 @@
 #!groovy
 
 /*
- * This pipeline will provision the Beer Catalog API found on the microcks/api-lifecycle
- * repository (secured using API Key) on a 3scale Hosted instance. 
- * 
+ * This pipeline will copy a product form one 3scale Hosted instance to another
+ * and create a new 3scale application. 
  * Setup instructions:
  * 1. Spin up a Jenkins master in a fresh OpenShift project
  * 2. Create a secret containing your 3scale_toolbox remotes:
@@ -54,31 +53,6 @@ node {
   }
 }
 
-  // stage("Run integration tests") {
-  //   /*
-  //    * When using 3scale Hosted with hosted APIcast instance, we need to extract the proxy definition
-  //    * to read the Public Staging Base URL. Otherwise, we can just re-use the publicStagingBaseURL
-  //    * variable defined above.
-  //    */
-  //   if (publicStagingBaseURL == null) {
-  //     def proxyDefinition = runToolbox([ "3scale", "proxy", "show", targetInstance, targetSystemName, "sandbox" ])
-  //     def proxy = readJSON text: proxyDefinition
-  //     publicStagingBaseURL = proxy.content.proxy.sandbox_endpoint
-  //   }
-
-  //   sh """
-  //   echo "Public Staging Base URL is ${publicStagingBaseURL}"
-  //   echo "userkey is ${testUserKey}"
-  //   curl -vfk ${publicStagingBaseURL}/beer -H 'api-key: ${testUserKey}'
-  //   curl -vfk ${publicStagingBaseURL}/beer/Weissbier -H 'api-key: ${testUserKey}'
-  //   curl -vfk ${publicStagingBaseURL}/beer/findByStatus/available -H 'api-key: ${testUserKey}'
-  //   """
-  // }
-  
-  // stage("Promote to production") {
-  //   runToolbox([ "3scale", "proxy", "promote", targetInstance, targetSystemName ])
-  // }
-
 /*
  * This function runs the 3scale toolbox as a Kubernetes Job.
  */
@@ -101,7 +75,7 @@ def runToolbox(args) {
           "containers": [
             [
               "name": "job",
-              // Do not forget to change the image tag to something more stable than "master"!
+              // Could be changed to use local image in openshift registry after import
               "image": "quay.io/redhat/3scale-toolbox:master",
               "imagePullPolicy": "Always",
               "args": [ "3scale", "version" ],
@@ -112,7 +86,6 @@ def runToolbox(args) {
               ],
               "volumeMounts": [
                 [ "mountPath": "/tmp/3scale/config", "name": "toolbox-config" ],
-                // [ "mountPath": "/artifacts", "name": "artifacts" ],
                 [ "mountPath": "/tmp/3scale/files", "name": "3scale-volume" ]
               ]
             ]
@@ -120,8 +93,7 @@ def runToolbox(args) {
           "volumes": [
             // This Secret contains the .3scalerc.yaml toolbox configuration file
             [ "name": "toolbox-config", "secret": [ "secretName": "3scalerc" ] ],
-            // This ConfigMap contains the artifacts to deploy (OpenAPI Specification file, Application Plan file, etc.)
-            // [ "name": "artifacts", "configMap": [ "name": "openapi" ] ],
+            //volume to put the yaml files to be used by different jobs 
             [ "name": "3scale-volume", "persistentVolumeClaim": [ "claimName": "3scale-pvc" ] ]
           ]
         ]
@@ -129,27 +101,15 @@ def runToolbox(args) {
     ]
   ]
   
-  // def 3sacalerc = [
-  //   ---
-  //   :remotes:
-  //     3scale-source
-  //       :authentication: 
-  //       :endpoint: 
-  //     3scale-destination
-  //       :authentication: 
-  //       :endpoint: 
-  // ]
-  
   // Patch the Kubernetes job template to add the provided 3scale_toolbox arguments
   kubernetesJob.spec.template.spec.containers[0].args = args
 
   // Write the Kubernetes Job definition to a YAML file
   sh "rm -f job.yaml"
   writeYaml file: "job.yaml", data: kubernetesJob
-  // writeYaml file: "3scalerc.yaml", data: kubernetesJob
 
 
-  // Do some cleanup, create the job and wait a little bit...
+  // Do some cleanup, create the job and wait a wait for it to be completed
   sh """
   oc delete job toolbox --ignore-not-found
   sleep 2
@@ -157,32 +117,6 @@ def runToolbox(args) {
   sleep 2
   oc wait --for=condition=complete job/toolbox
   """
-  // i=0
-  // while [ true ]
-  // do
-  // i=\$[\$i+1]
-  // oc get job toolbox|grep "1/1"
-  // echo \$?
-  // if [ \$? -eq 0 ]
-  // then
-  // break
-  // elif [ \$i -eq 60 ]
-  // then echo "ERROR"
-  // break
-  // fi
-  // echo \$i
-  // sleep 1
-  // done
-  // sh """
-  // oc delete job toolbox --ignore-not-found
-  // sleep 2
-  // oc delete secret 3scalerc --ignore-not-found
-  // sleep 2
-  // oc create secret generic 3scalerc  --from-file=3scalerc.yaml
-  // sleep 2
-  // oc create -f job.yaml
-  // sleep 20 # Adjust the sleep duration to your server velocity
-  // """
   
   // ...before collecting logs!
   def logs = sh(script: "oc logs -f job/toolbox", returnStdout: true)
