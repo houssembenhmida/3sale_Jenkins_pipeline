@@ -51,11 +51,11 @@ node {
   }
 
   stage("Import product") {
-    runToolbox([ "3scale", "product", "import", "-k", "-f /tmp/3scale/files/product.yaml", targetInstance])
+    runToolbox([ "3scale", "product", "import", "-k", "--file=/tmp/3scale/files/product.yaml", targetInstance])
   }
-  // stage("Create an Application") {
-  //   runToolbox([ "3scale", "application", "create", "-k", targetInstance, account, targetProductName, targetAppPlanName, targetApplicationName])
-  // }
+  stage("Create an Application") {
+    runToolbox([ "3scale", "application", "create", "-k", targetInstance, account, targetProductName, targetAppPlanName, targetApplicationName])
+  }
 }
 
   // stage("Run integration tests") {
@@ -159,7 +159,7 @@ def runToolbox(args) {
   sleep 2
   oc create -f job.yaml
   sleep 2
-  oc wait --for=condition=complete job/toolbox
+  oc wait --for=condition=complete job/toolbox --ti
   """
   // i=0
   // while [ true ]
