@@ -34,11 +34,12 @@ def publicStagingBaseURL = null // change to something such as "http://my-stagin
 def publicProductionBaseURL = null // change to something such as "http://my-production-api.example.test" for self-managed APIcast or on-premises installation of 3scale
 
 node {
-  stage("Export product") {
-    runToolbox([ "3scale", "product", "export", "-k", "--file=/tmp/3scale/files/product.yaml", sourceInstance, sourceProductName])
-  }
+  // stage("Export product") {
+  //   runToolbox([ "3scale", "product", "export", "-k", "--file=/tmp/3scale/files/product.yaml", sourceInstance, sourceProductName])
+  // }
 
   stage("Edit product name") {
+    echo "'s/$sourceProductName/$targetProductName/g'"
     runToolbox([ "sed", "-i", "'s/$sourceProductName/$targetProductName/g'", "/tmp/3scale/files/product.yaml" ])
   }
 
