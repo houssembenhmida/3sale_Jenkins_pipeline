@@ -40,7 +40,7 @@ node {
   stage("Export product") {
     echo sourceInstance
     echo sourceProductName
-    runToolbox([ "3scale", "product", "export", "-k", "-f /tmp/3scale/files/product.yaml", sourceInstance, sourceProductName])
+    runToolbox([ "3scale", "product", "export", "-k", "--file=/tmp/3scale/files/product.yaml", sourceInstance, sourceProductName])
   }
 
   // stage("Edit product name") {
