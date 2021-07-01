@@ -164,8 +164,8 @@ def runToolbox(args) {
   do
   i=\$[\$i+1]
   oc get job toolbox|grep "1/1"
-  echo \$\?
-  if [ \$? -eq 0 ]
+  echo $?
+  if [ $? -eq 0 ]
   then
   break
   elif [ \$i -eq 60 ]
